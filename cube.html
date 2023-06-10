@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  #canvas { display: block; width: 500px; height: 500px; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 300;
+  canvas.height = 300;
+
+  const cube = [
+    [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+    [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]
+  ];
+  
+const faces = [
+    { indices: [0, 1, 2, 3], color: 'rgba(255, 0, 0, 0.6)' }, // Front face - red
+    { indices: [4, 5, 6, 7], color: 'rgba(0, 255, 0, 0.6)' }, // Back face - green
+    { indices: [0, 1, 5, 4], color: 'rgba(0, 0, 255, 0.6)' }, // Right face - blue
+    { indices: [3, 2, 6, 7], color: 'rgba(255, 255, 0, 0.6)' }, // Left face - yellow
+    { indices: [0, 3, 7, 4], color: 'rgba(0, 255, 255, 0.6)' }, // Top face - cyan
+    { indices: [1, 2, 6, 5], color: 'rgba(255, 0, 255, 0.6)' }, // Bottom face - magenta
+];
+ 
+  
+  function faceAverageZ(face) {
+    return face.indices.reduce((sum, index) => sum + cube[index][2], 0) / 4;
+}
+  
+let time = 0;
+const rotationSpeed = 0.015;
+
+function project(point) {
+    const distance = 5; // Increase this value to make the perspective less strong
+    const scale = 400 / (distance + point[2]); // Increase this value to make the cube larger
+    const x = point[0] * scale + canvas.width / 2;
+    const y = -point[1] * scale + canvas.height / 2;
+    return [x, y];
+}
+
+
+  function connect(i, j) {
+    ctx.beginPath();
+    ctx.moveTo(...project(cube[i]));
+    ctx.lineTo(...project(cube[j]));
+    ctx.stroke();
+  }
+  
+function drawCube() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    faces.sort((a, b) => faceAverageZ(b) - faceAverageZ(a));
+
+    for (const face of faces) {
+        drawFace(face.indices, face.color);
+}
+}
+
+  
+function rotate(axis1, axis2, angle) {
+    const sin = Math.sin(angle);
+    const cos = Math.cos(angle);
+    for (const point of cube) {
+      const temp = point[axis1] * cos - point[axis2] * sin;
+      point[axis2] = point[axis1] * sin + point[axis2] * cos;
+      point[axis1] = temp;
+    }
+}
+
+  function animate() {
+    const angleXZ = rotationSpeed * (Math.sin(time * 1.3) + Math.cos(time * 0.8));
+    const angleYZ = rotationSpeed * (Math.sin(time * 1.1) + Math.cos(time * 0.7));
+    const angleXY = rotationSpeed * (Math.sin(time * 0.9) + Math.cos(time * 1.2));
+
+    rotate(0, 2, angleXZ); // Rotate around X-Z plane
+    rotate(1, 2, angleYZ); // Rotate around Y-Z plane
+    rotate(0, 1, angleXY); // Rotate around X-Y plane
+    drawCube();
+    time += 0.01;
+    requestAnimationFrame(animate);
+}
+
+
+function drawFace(points, color) {
+    ctx.beginPath();
+    ctx.moveTo(...project(cube[points[0]]));
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(...project(cube[points[i]]));
+    }
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+
+    ctx.strokeStyle = 'black'; // Set the stroke style to black
+    ctx.lineWidth = 1; // Set the line width
+    ctx.stroke(); // Draw the edges
+}
+
+  
+  
+  
+  
+  animate();
+</script>
+</body>
+</html>
