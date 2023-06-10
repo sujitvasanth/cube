@@ -1,5 +1,4 @@
-# cube
-javascript 3d spinning cube written using chat GPT
+# cube - javascript 3d spinning cube written using chat GPT
 
 You can run the javascript code by clicking https://sujitmindmap.000webhostapp.com/cube.html
 
